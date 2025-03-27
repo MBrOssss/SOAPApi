@@ -111,7 +111,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CompositeTypes\Doctor.cs" />
+    <Compile Include="CompositeTypes\DoctorDTO.cs" />
     <Compile Include="CompositeTypes\ResponseState.cs" />
     <Compile Include="DoctorService.svc.cs">
       <DependentUpon>DoctorService.svc</DependentUpon>

@@ -1,9 +1,10 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace SOAPApi.CompositeTypes
 {
 	[DataContract]
-	public class Doctor
+	public class DoctorDTO
 	{
         [DataMember]
         public int Id { get; set; }
@@ -16,5 +17,11 @@ namespace SOAPApi.CompositeTypes
 
         [DataMember]
         public string Specialization { get; set; }
+
+        [DataMember]
+        public DateTime? CreatedDate { get; set; }
+
+        [DataMember]
+        public DateTime? UpdatedDate { get; set; }
     }
 }
