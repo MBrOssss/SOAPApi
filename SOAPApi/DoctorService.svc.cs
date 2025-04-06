@@ -36,18 +36,29 @@ namespace SOAPApi
             ValidateDoctor(doctor);
 
             using (var context = new ApplicationDbContext())
+            using (var transaction = context.Database.BeginTransaction())
             {
-                var newDoctor = new Data.Models.Doctor()
+                try
                 {
-                    FirstName = doctor.FirstName,
-                    LastName = doctor.LastName,
-                    Specialization = doctor.Specialization,
-                };
+                    var newDoctor = new Data.Models.Doctor()
+                    {
+                        FirstName = doctor.FirstName,
+                        LastName = doctor.LastName,
+                        Specialization = doctor.Specialization,
+                    };
 
-                context.Doctors.Add(newDoctor);
-                await context.SaveChangesAsync();
+                    context.Doctors.Add(newDoctor);
+                    await context.SaveChangesAsync();
 
-                return MapToDTO(newDoctor);
+                    transaction.Commit();
+
+                    return MapToDTO(newDoctor);
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
         }
 
@@ -56,34 +67,56 @@ namespace SOAPApi
             ValidateDoctor(doctor);
 
             using (var context = new ApplicationDbContext())
+            using (var transaction = context.Database.BeginTransaction())
             {
-                var existingDoctor = await context.Doctors.FindAsync(doctor.Id);
-                if (existingDoctor == null)
+                try
                 {
-                    throw new KeyNotFoundException($"Doctor with ID {doctor.Id} not found.");
+                    var existingDoctor = await context.Doctors.FindAsync(doctor.Id);
+                    if (existingDoctor == null)
+                    {
+                        throw new KeyNotFoundException($"Doctor with ID {doctor.Id} not found.");
+                    }
+
+                    existingDoctor.FirstName = doctor.FirstName;
+                    existingDoctor.LastName = doctor.LastName;
+                    existingDoctor.Specialization = doctor.Specialization;
+                    await context.SaveChangesAsync();
+
+                    transaction.Commit();
+
+                    return MapToDTO(existingDoctor);
                 }
-
-                existingDoctor.FirstName = doctor.FirstName;
-                existingDoctor.LastName = doctor.LastName;
-                existingDoctor.Specialization = doctor.Specialization;
-                await context.SaveChangesAsync();
-
-                return MapToDTO(existingDoctor);
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
         }
 
         public async Task DeleteDoctor(int id)
         {
             using (var context = new ApplicationDbContext())
+            using (var transaction = context.Database.BeginTransaction())
             {
-                var doctor = await context.Doctors.FindAsync(id);
-                if (doctor == null)
+                try
                 {
-                    throw new KeyNotFoundException($"Doctor with ID {id} not found.");
-                }
+                    var doctor = await context.Doctors.FindAsync(id);
+                    if (doctor == null)
+                    {
+                        throw new KeyNotFoundException($"Doctor with ID {id} not found.");
+                    }
 
-                context.Doctors.Remove(doctor);
-                await context.SaveChangesAsync();
+                    context.Doctors.Remove(doctor);
+                    await context.SaveChangesAsync();
+
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
         }
 
